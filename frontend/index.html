@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Code Reviewer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 </head>
+
 <body>
 
   <header>
@@ -17,8 +23,9 @@
 
   <main>
     <section class="hero">
-      <h1>Review Your Code<br/><span>Instantly with AI</span></h1>
-      <p>Paste any code snippet and get bug reports, improvement tips, and best practices — powered by powerful CodeSense AI.</p>
+      <h1>Review Your Code<br /><span>Instantly with AI</span></h1>
+      <p>Paste any code snippet and get bug reports, improvement tips, and best practices — powered by powerful
+        CodeSense AI.</p>
     </section>
 
     <section class="editor-section">
@@ -58,7 +65,10 @@ function example() {
 
       <div class="result-card" id="improvedCard">
         <div class="card-header improved">✨ Improved Code</div>
-        <pre><code id="improvedCode"></code></pre>
+        <div class="code-toolbar">
+          <button class="copy-btn" onclick="copyCode()">Copy</button>
+        </div>
+        <pre><code id="improvedCode" class="language-javascript"></code></pre>
       </div>
     </section>
 
@@ -68,7 +78,8 @@ function example() {
   <footer>
     Built by You · Powered by AI · Part of RNS Project 2025
   </footer>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>

@@ -72,6 +72,7 @@ function displayResults(data) {
   const improvedCode = document.getElementById("improvedCode");
   if (improved_code) {
     improvedCode.textContent = improved_code;
+    highlightCode();
     document.getElementById("improvedCard").classList.remove("hidden");
   } else {
     document.getElementById("improvedCard").classList.add("hidden");
@@ -103,4 +104,21 @@ function hideError() {
 
 function hideResults() {
   document.getElementById("resultsSection").classList.add("hidden");
+}
+// Re-run Prism highlight after content is injected
+function highlightCode() {
+  const block = document.getElementById("improvedCode");
+  const lang = document.getElementById("langSelect").value;
+  block.className = `language-${lang}`;
+  Prism.highlightElement(block);
+}
+
+// Copy improved code to clipboard
+function copyCode() {
+  const code = document.getElementById("improvedCode").textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.querySelector(".copy-btn");
+    btn.textContent = "Copied ✅";
+    setTimeout(() => btn.textContent = "Copy", 2000);
+  });
 }
