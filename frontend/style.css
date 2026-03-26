@@ -298,3 +298,29 @@ footer {
 .copy-btn:hover {
   background: var(--border);
 }
+
+/* ===== Issue Badges ===== */
+.issue-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  margin-right: 0.4rem;
+  font-family: var(--font-mono);
+}
+.badge-bug        { background: #3d1515; color: #ff6b6b; }
+.badge-security   { background: #3d1a0a; color: #ff9f43; }
+.badge-performance{ background: #1a1a3d; color: #7c6fff; }
+.badge-formatting { background: #0d2d1e; color: #00e5a0; }
+.badge-exception  { background: #2d1a3d; color: #c77dff; }
+.badge-naming     { background: #1a2d3d; color: #48cae4; }
+.badge-complexity { background: #2d2d0d; color: #ffd166; }
+.badge-unused     { background: #2d2d2d; color: #adb5bd; }
+.badge-best       { background: #0d1a2d; color: #74c0fc; }
+
+.issue-line {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+}

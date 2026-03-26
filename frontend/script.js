@@ -40,19 +40,30 @@ async function analyzeCode() {
 
 // ===== Display Results =====
 function displayResults(data) {
-  const { issues, suggestions, improved_code } = data;
+  const { issues, suggestions, improved_code, score, grade, summary } = data;
 
-  // Issues
+  // Summary bar
+  const summaryEl = document.getElementById("summaryText");
+  if (summaryEl && summary) summaryEl.textContent = summary;
+
+  // Score
+  const scoreEl = document.getElementById("scoreValue");
+  const gradeEl = document.getElementById("gradeValue");
+  if (scoreEl) scoreEl.textContent = score || "–";
+  if (gradeEl) gradeEl.textContent = grade || "–";
+
+  // Issues — grouped by type with colored badges
   const issuesList = document.getElementById("issuesList");
   issuesList.innerHTML = "";
   if (issues && issues.length > 0) {
     issues.forEach(issue => {
       const li = document.createElement("li");
-      li.textContent = issue;
+      li.innerHTML = `<span class="issue-badge ${getBadgeClass(issue.type)}">${issue.type}</span>
+        <span class="issue-line">Line ${issue.line}</span> — ${issue.message}`;
       issuesList.appendChild(li);
     });
   } else {
-    issuesList.innerHTML = "<li>No issues found ✅</li>";
+    issuesList.innerHTML = "<li>No issues found ✅ Great code!</li>";
   }
 
   // Suggestions
@@ -81,6 +92,20 @@ function displayResults(data) {
   document.getElementById("resultsSection").classList.remove("hidden");
 }
 
+function getBadgeClass(type) {
+  const map = {
+    "Bug": "badge-bug",
+    "Security": "badge-security",
+    "Performance": "badge-performance",
+    "Formatting": "badge-formatting",
+    "Exception Handling": "badge-exception",
+    "Naming": "badge-naming",
+    "Complexity": "badge-complexity",
+    "Unused Code": "badge-unused",
+    "Best Practice": "badge-best",
+  };
+  return map[type] || "badge-default";
+}
 // ===== UI Helpers =====
 function setLoading(isLoading) {
   const btn = document.getElementById("analyzeBtn");
