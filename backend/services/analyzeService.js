@@ -63,6 +63,20 @@ ${code}
   const text = response.choices[0].message.content;
   const cleaned = text.replace(/```json|```/g, "").trim();
   const parsed = JSON.parse(cleaned);
+  // Save to MongoDB
+  const Review = require("../models/Review");
+  const saved = await Review.create({
+    language,
+    code,
+    issues: parsed.issues || [],
+    suggestions: parsed.suggestions || [],
+    improved_code: parsed.improved_code || "",
+    score: parsed.score || 0,
+    grade: parsed.grade || "N/A",
+    summary: parsed.summary || "",
+  });
+
+  parsed.reviewId = saved._id;
   return parsed;
 };
 
