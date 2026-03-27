@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CodeSense AI — Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        /* ===== Login Page Specific Styles ===== */
+        .auth-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+
+        .auth-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .auth-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .auth-title {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 0.4rem;
+        }
+
+        .auth-subtitle {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 1.8rem;
+        }
+
+        /* Tab switcher */
+        .tab-bar {
+            display: flex;
+            background: var(--surface2);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 1.8rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-ui);
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            color: var(--muted);
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #000;
+        }
+
+        /* Form fields */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            padding: 0.8rem 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent);
+        }
+
+        .form-input::placeholder {
+            color: var(--muted);
+        }
+
+        .forgot-link {
+            float: right;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-decoration: none;
+            margin-top: -0.3rem;
+        }
+
+        .forgot-link:hover {
+            opacity: 0.8;
+        }
+
+        /* Submit button */
+        .auth-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--accent);
+            color: #000;
+            font-family: var(--font-ui);
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 0.5rem;
+        }
+
+        .auth-btn:hover {
+            opacity: 0.88;
+        }
+
+        .auth-btn:active {
+            transform: scale(0.99);
+        }
+
+        .auth-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider-text {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        /* Auth error/success */
+        .auth-error {
+            background: #1e1416;
+            border: 1px solid var(--warn);
+            color: var(--warn);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .auth-success {
+            background: #0d1a16;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Name field — only shown on register */
+        #nameGroup {
+            display: none;
+        }
+
+        /* Password strength indicator */
+        .strength-bar {
+            height: 3px;
+            border-radius: 2px;
+            margin-top: 0.4rem;
+            transition: all 0.3s;
+            background: var(--border);
+        }
+
+        .strength-weak {
+            background: var(--warn);
+            width: 33%;
+        }
+
+        .strength-medium {
+            background: #ffd166;
+            width: 66%;
+        }
+
+        .strength-strong {
+            background: var(--accent);
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="auth-wrapper">
+
+        <!-- Header -->
+        <header>
+            <div class="logo">⬡ CodeSense AI</div>
+            <span class="badge">MVP v1.0</span>
+        </header>
+
+        <!-- Auth Card -->
+        <div class="auth-main">
+            <div class="auth-card">
+
+                <h1 class="auth-title" id="authTitle">Welcome Back</h1>
+                <p class="auth-subtitle" id="authSubtitle">Sign in to your CodeSense account</p>
+
+                <!-- Tab Bar -->
+                <div class="tab-bar">
+                    <button class="tab-btn active" id="loginTab" onclick="switchTab('login')">Login</button>
+                    <button class="tab-btn" id="registerTab" onclick="switchTab('register')">Register</button>
+                </div>
+
+                <!-- Error / Success Messages -->
+                <div id="authError" class="auth-error hidden"></div>
+                <div id="authSuccess" class="auth-success hidden"></div>
+
+                <!-- Form -->
+                <form onsubmit="handleSubmit(event)" autocomplete="off">
+
+                    <!-- Name (Register only) -->
+                    <div class="form-group" id="nameGroup">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="nameInput" class="form-input" placeholder="Enter your full name" autocomplete="off"/>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" id="emailInput" class="form-input" placeholder="Enter your email address" autocomplete="off"/>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <label class="form-label">Password</label>
+                            <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
+                        </div>
+                        <input type="password" id="passwordInput" class="form-input" placeholder="Enter your passsword"
+                            oninput="checkStrength(this.value)" autocomplete="new-password"/>
+                        <div class="strength-bar" id="strengthBar"></div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="auth-btn" id="authSubmitBtn" >
+                        Sign In →
+                    </button>
+
+                </form>
+
+                <!-- Divider -->
+                <div class="divider">
+                    <div class="divider-line"></div>
+                    <span class="divider-text">or</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <!-- Switch tab hint -->
+                <p style="text-align:center; font-family:var(--font-mono); font-size:0.8rem; color:var(--muted);">
+                    <span id="switchText">Don't have an account?</span>
+                    <a href="#" id="switchLink" onclick="switchTab('register')"
+                        style="color:var(--accent); margin-left:0.3rem;">Register →</a>
+                </p>
+
+            </div>
+        </div>
+
+        <footer>Built by Kushal Gowda · CodeSense AI · RNS Project 2026</footer>
+    </div>
+
+    <script>
+       const API_URL = "http://localhost:3000";
+let currentTab = "login";
+
+// ===== Tab Switcher =====
+function switchTab(tab) {
+  currentTab = tab;
+  const isLogin = tab === "login";
+
+  document.getElementById("loginTab").classList.toggle("active", isLogin);
+  document.getElementById("registerTab").classList.toggle("active", !isLogin);
+  document.getElementById("nameGroup").style.display = isLogin ? "none" : "block";
+  document.getElementById("authTitle").textContent = isLogin ? "Welcome Back" : "Create Account";
+  document.getElementById("authSubtitle").textContent = isLogin
+    ? "Sign in to your CodeSense account"
+    : "Join CodeSense and start reviewing code";
+  document.getElementById("authSubmitBtn").textContent = isLogin ? "Sign In →" : "Create Account →";
+  document.getElementById("forgotLink").style.display = isLogin ? "block" : "none";
+  document.getElementById("switchText").textContent = isLogin ? "Don't have an account?" : "Already have an account?";
+  document.getElementById("switchLink").textContent = isLogin ? "Register →" : "Login →";
+  document.getElementById("switchLink").onclick = (e) => { e.preventDefault(); switchTab(isLogin ? "register" : "login"); };
+  hideMessages();
+}
+
+// ===== Form Submit =====
+async function handleSubmit(e) {
+  e.preventDefault();
+  hideMessages();
+
+  const email    = document.getElementById("emailInput").value.trim();
+  const password = document.getElementById("passwordInput").value.trim();
+  const btn      = document.getElementById("authSubmitBtn");
+
+  if (!email || !password) { showError("Please fill in all fields."); return; }
+
+  btn.disabled = true;
+  btn.textContent = "Please wait...";
+
+  try {
+    if (currentTab === "login") {
+      await handleLogin(email, password);
+    } else {
+      const name = document.getElementById("nameInput").value.trim();
+      if (!name) { showError("Please enter your full name."); btn.disabled = false; btn.textContent = "Create Account →"; return; }
+      await handleRegister(name, email, password);
+    }
+  } catch (err) {
+    showError("Network error. Make sure backend is running on port 3000.");
+    btn.disabled = false;
+    btn.textContent = currentTab === "login" ? "Sign In →" : "Create Account →";
+  }
+}
+
+// ===== Login =====
+async function handleLogin(email, password) {
+  const btn = document.getElementById("authSubmitBtn");
+  try {
+    const res  = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.error || "Login failed."); return; }
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    showSuccess(`Welcome back, ${data.user.name}! Redirecting...`);
+    setTimeout(() => { window.location.href = "index.html"; }, 1000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Sign In →";
+  }
+}
+
+// ===== Register =====
+async function handleRegister(name, email, password) {
+  const btn = document.getElementById("authSubmitBtn");
+  try {
+    if (password.length < 6) { showError("Password must be at least 6 characters."); return; }
+    const res  = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.error || "Registration failed."); return; }
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    showSuccess(`Account created! Welcome, ${data.user.name}! Redirecting...`);
+    setTimeout(() => { window.location.href = "index.html"; }, 1000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Create Account →";
+  }
+}
+
+// ===== Password Strength =====
+function checkStrength(password) {
+  const bar = document.getElementById("strengthBar");
+  if (!password)           { bar.className = "strength-bar"; return; }
+  if (password.length < 6) { bar.className = "strength-bar strength-weak"; return; }
+  if (password.length < 10){ bar.className = "strength-bar strength-medium"; return; }
+  bar.className = "strength-bar strength-strong";
+}
+
+// ===== Helpers =====
+function showError(msg) {
+  const el = document.getElementById("authError");
+  el.textContent = "⚠ " + msg;
+  el.classList.remove("hidden");
+  document.getElementById("authSuccess").classList.add("hidden");
+}
+
+function showSuccess(msg) {
+  const el = document.getElementById("authSuccess");
+  el.textContent = "✅ " + msg;
+  el.classList.remove("hidden");
+  document.getElementById("authError").classList.add("hidden");
+}
+
+function hideMessages() {
+  document.getElementById("authError").classList.add("hidden");
+  document.getElementById("authSuccess").classList.add("hidden");
+}
+
+// ===== IMPORTANT: Clear any bad token, then check =====
+// Clear inputs on page load always
+window.onload = () => {
+  // Always clear inputs first
+  document.getElementById("emailInput").value = "";
+  document.getElementById("passwordInput").value = "";
+  document.getElementById("nameInput").value = "";
+
+  // Only redirect if valid token exists
+  const token = localStorage.getItem("token");
+  const user  = localStorage.getItem("user");
+  if (token && user && user !== "null") {
+    window.location.href = "index.html";
+  }
+};
+        
+    </script>
+</body>
+
+</html>

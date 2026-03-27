@@ -8,6 +8,7 @@ const issueSchema = new mongoose.Schema({
 });
 
 const reviewSchema = new mongoose.Schema({
+  userId:       { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
   language:     { type: String, required: true },
   code:         { type: String, required: true },
   issues:       [issueSchema],

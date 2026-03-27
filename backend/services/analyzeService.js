@@ -7,7 +7,7 @@ const client = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-const analyzeCode = async (code, language) => {
+const analyzeCode = async (code, language, userId = null) => {
   const prompt = `
 You are an expert code reviewer and software engineer. Analyze the following ${language} code thoroughly and respond ONLY with a valid JSON object. No explanation, no markdown, no code fences.
 
@@ -65,7 +65,9 @@ ${code}
   const parsed = JSON.parse(cleaned);
   // Save to MongoDB
   const Review = require("../models/Review");
+  // Change the Review.create call to include userId
   const saved = await Review.create({
+    userId: userId || null,   // ← ADD this line
     language,
     code,
     issues: parsed.issues || [],

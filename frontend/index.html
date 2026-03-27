@@ -17,10 +17,12 @@
 <body>
 
   <header>
-    <div class="logo">⬡ CodeSense AI</div>
-    <span class="badge">MVP v1.0</span>
-  </header>
-
+  <div class="logo">⬡ CodeSense AI</div>
+  <div style="display:flex; align-items:center; gap:1rem;">
+    <span id="userChip" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:#6b7280;"></span>
+    <button onclick="logout()" style="background:#1a1e2a; border:1px solid #2a2f3d; color:#ff6b6b; font-family:'JetBrains Mono',monospace; font-size:0.75rem; padding:0.4rem 0.8rem; border-radius:8px; cursor:pointer;">Logout</button>
+  </div>
+</header>
   <main>
     <section class="hero">
       <h1>Review Your Code<br /><span>Instantly with AI</span></h1>

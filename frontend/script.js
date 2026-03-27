@@ -1,11 +1,18 @@
 // ===== Configuration =====
 const API_URL = "http://localhost:3000/analyze";
 
+
 // ===== Main Function =====
 async function analyzeCode() {
+  const token = localStorage.getItem("token");
+
   const code = document.getElementById("codeInput").value.trim();
   const language = document.getElementById("langSelect").value;
 
+  if (!token) {
+    showError("Please login first.");
+    return;
+  }
   // Validate input
   if (!code) {
     showError("Please paste some code before analyzing.");
@@ -20,7 +27,10 @@ async function analyzeCode() {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,  // ← this line MUST be here
+      },
       body: JSON.stringify({ code, language }),
     });
 
@@ -37,34 +47,47 @@ async function analyzeCode() {
     setLoading(false);
   }
 }
+// ===== Badge class helper =====
+function getBadgeClass(type) {
+  const map = {
+    "Bug": "badge-bug",
+    "Security": "badge-security",
+    "Performance": "badge-performance",
+    "Formatting": "badge-formatting",
+    "Exception Handling": "badge-exception",
+    "Naming": "badge-naming",
+    "Complexity": "badge-complexity",
+    "Unused Code": "badge-unused",
+    "Best Practice": "badge-best",
+  };
+  return map[type] || "badge-default";
+}
 
 // ===== Display Results =====
 function displayResults(data) {
-  const { issues, suggestions, improved_code, score, grade, summary } = data;
+  const { issues, suggestions, improved_code } = data;
 
-  // Summary bar
-  const summaryEl = document.getElementById("summaryText");
-  if (summaryEl && summary) summaryEl.textContent = summary;
+  // Issues
+  // Issues — with colored badges
+const issuesList = document.getElementById("issuesList");
+issuesList.innerHTML = "";
+if (issues && issues.length > 0) {
+  issues.forEach(issue => {
+    const li = document.createElement("li");
 
-  // Score
-  const scoreEl = document.getElementById("scoreValue");
-  const gradeEl = document.getElementById("gradeValue");
-  if (scoreEl) scoreEl.textContent = score || "–";
-  if (gradeEl) gradeEl.textContent = grade || "–";
+    // Handle both object format {type, line, message} AND plain string format
+    if (typeof issue === "object" && issue !== null) {
+      li.innerHTML = `<span class="issue-badge ${getBadgeClass(issue.type)}">${issue.type || "Issue"}</span>
+        <span class="issue-line"> Line ${issue.line || "N/A"}</span> — ${issue.message || ""}`;
+    } else {
+      li.textContent = issue;
+    }
 
-  // Issues — grouped by type with colored badges
-  const issuesList = document.getElementById("issuesList");
-  issuesList.innerHTML = "";
-  if (issues && issues.length > 0) {
-    issues.forEach(issue => {
-      const li = document.createElement("li");
-      li.innerHTML = `<span class="issue-badge ${getBadgeClass(issue.type)}">${issue.type}</span>
-        <span class="issue-line">Line ${issue.line}</span> — ${issue.message}`;
-      issuesList.appendChild(li);
-    });
-  } else {
-    issuesList.innerHTML = "<li>No issues found ✅ Great code!</li>";
-  }
+    issuesList.appendChild(li);
+  });
+} else {
+  issuesList.innerHTML = "<li>No issues found ✅ Great code!</li>";
+}
 
   // Suggestions
   const suggestionsList = document.getElementById("suggestionsList");
@@ -83,7 +106,6 @@ function displayResults(data) {
   const improvedCode = document.getElementById("improvedCode");
   if (improved_code) {
     improvedCode.textContent = improved_code;
-    highlightCode();
     document.getElementById("improvedCard").classList.remove("hidden");
   } else {
     document.getElementById("improvedCard").classList.add("hidden");
@@ -92,20 +114,6 @@ function displayResults(data) {
   document.getElementById("resultsSection").classList.remove("hidden");
 }
 
-function getBadgeClass(type) {
-  const map = {
-    "Bug": "badge-bug",
-    "Security": "badge-security",
-    "Performance": "badge-performance",
-    "Formatting": "badge-formatting",
-    "Exception Handling": "badge-exception",
-    "Naming": "badge-naming",
-    "Complexity": "badge-complexity",
-    "Unused Code": "badge-unused",
-    "Best Practice": "badge-best",
-  };
-  return map[type] || "badge-default";
-}
 // ===== UI Helpers =====
 function setLoading(isLoading) {
   const btn = document.getElementById("analyzeBtn");
@@ -130,20 +138,10 @@ function hideError() {
 function hideResults() {
   document.getElementById("resultsSection").classList.add("hidden");
 }
-// Re-run Prism highlight after content is injected
-function highlightCode() {
-  const block = document.getElementById("improvedCode");
-  const lang = document.getElementById("langSelect").value;
-  block.className = `language-${lang}`;
-  Prism.highlightElement(block);
-}
+function logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
 
-// Copy improved code to clipboard
-function copyCode() {
-  const code = document.getElementById("improvedCode").textContent;
-  navigator.clipboard.writeText(code).then(() => {
-    const btn = document.querySelector(".copy-btn");
-    btn.textContent = "Copied ✅";
-    setTimeout(() => btn.textContent = "Copy", 2000);
-  });
-}
+            window.location.href = "login.html";
+            
+        }

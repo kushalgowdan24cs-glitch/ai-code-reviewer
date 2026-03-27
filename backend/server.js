@@ -5,20 +5,19 @@ require("dotenv").config();
 const connectDB = require("./config/db");
 const analyzeRoute = require("./routes/analyze");
 const historyRoute = require("./routes/history");
+const authRoute = require("./routes/auth");           // ← ADD
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Connect to MongoDB
 connectDB();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
 app.use("/analyze", analyzeRoute);
 app.use("/history", historyRoute);
+app.use("/auth", authRoute);                          // ← ADD
 
 app.get("/", (req, res) => {
   res.json({ status: "AI Code Reviewer API running ✅" });
