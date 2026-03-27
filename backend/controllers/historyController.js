@@ -2,7 +2,7 @@ const { getAllReviews, getReviewById } = require("../services/historyService");
 
 const getHistory = async (req, res) => {
   try {
-    const reviews = await getAllReviews();
+    const reviews = await getAllReviews(req.user.userId);
     res.json(reviews);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch history." });

@@ -1,87 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Code Reviewer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link
-    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 </head>
-
 <body>
 
-  <header>
-  <div class="logo">⬡ CodeSense AI</div>
-  <div style="display:flex; align-items:center; gap:1rem;">
-    <span id="userChip" style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:#6b7280;"></span>
-    <button onclick="logout()" style="background:#1a1e2a; border:1px solid #2a2f3d; color:#ff6b6b; font-family:'JetBrains Mono',monospace; font-size:0.75rem; padding:0.4rem 0.8rem; border-radius:8px; cursor:pointer;">Logout</button>
-  </div>
-</header>
-  <main>
-    <section class="hero">
-      <h1>Review Your Code<br /><span>Instantly with AI</span></h1>
-      <p>Paste any code snippet and get bug reports, improvement tips, and best practices — powered by powerful
-        CodeSense AI.</p>
-    </section>
+  <!-- ===== APP SHELL ===== -->
+  <div class="app-shell">
 
-    <section class="editor-section">
-      <div class="editor-header">
-        <label for="codeInput">📋 Paste Your Code</label>
-        <select id="langSelect">
-          <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
-          <option value="java">Java</option>
-          <option value="c++">C++</option>
-          <option value="other">Other</option>
-        </select>
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- Sidebar Header -->
+      <div class="sidebar-header">
+        <div class="logo">⬡ CodeSense AI</div>
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Collapse sidebar">◀</button>
       </div>
-      <textarea id="codeInput" spellcheck="false" placeholder="// Paste your code here...
+
+      <!-- New Review Button -->
+      <button class="new-review-btn" onclick="newReview()">
+        <span class="new-review-icon">＋</span>
+        <span class="new-review-label">New Review</span>
+      </button>
+
+      <!-- History Section -->
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Recent Reviews</div>
+        <ul class="history-list" id="sidebarHistoryList">
+          <li class="history-item-empty">No reviews yet</li>
+        </ul>
+      </div>
+
+      <!-- Sidebar Footer — User Profile -->
+      <div class="sidebar-footer">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebarUserName">User</div>
+          <div class="user-role">Free Plan</div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+
+    </aside>
+
+    <!-- ===== MAIN AREA ===== -->
+    <div class="main-area" id="mainArea">
+
+      <!-- Top bar (visible when sidebar is collapsed) -->
+      <header class="topbar">
+        <button class="topbar-toggle" id="topbarToggle" onclick="toggleSidebar()">☰</button>
+        <span class="topbar-title">⬡ CodeSense AI</span>
+        <span id="userChip"></span>
+      </header>
+
+      <main>
+        <section class="hero">
+          <h1>Review Your Code<br /><span>Instantly with AI</span></h1>
+          <p>Paste any code snippet and get bug reports, improvement tips, and best practices — powered by CodeSense AI.</p>
+        </section>
+
+        <section class="editor-section">
+          <div class="editor-header">
+            <label for="codeInput">📋 Paste Your Code</label>
+            <select id="langSelect">
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="c++">C++</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <textarea id="codeInput" spellcheck="false" placeholder="// Paste your code here...
 function example() {
   var x = 10
   console.log(x)
 }"></textarea>
-      <button id="analyzeBtn" onclick="analyzeCode()">
-        <span id="btnText">⚡ Analyze Code</span>
-        <span id="btnLoader" class="hidden">⏳ Analyzing...</span>
-      </button>
-    </section>
+          <button id="analyzeBtn" onclick="analyzeCode()">
+            <span id="btnText">⚡ Analyze Code</span>
+            <span id="btnLoader" class="hidden">⏳ Analyzing...</span>
+          </button>
+        </section>
 
-    <section class="results-section hidden" id="resultsSection">
-      <h2>📊 Review Results</h2>
+        <section class="results-section hidden" id="resultsSection">
+          <h2>📊 Review Results</h2>
 
-      <div class="result-card" id="issuesCard">
-        <div class="card-header issues">🐛 Issues Found</div>
-        <ul id="issuesList"></ul>
-      </div>
+          <!-- Score Banner -->
+          <div class="score-banner" id="scoreBanner">
+            <div class="score-circle" id="scoreCircle">—</div>
+            <div class="score-meta">
+              <div class="score-grade" id="scoreGrade">Grade: —</div>
+              <div class="score-summary" id="scoreSummary"></div>
+            </div>
+          </div>
 
-      <div class="result-card" id="suggestionsCard">
-        <div class="card-header suggestions">💡 Suggestions</div>
-        <ul id="suggestionsList"></ul>
-      </div>
+          <div class="result-card" id="issuesCard">
+            <div class="card-header issues">🐛 Issues Found</div>
+            <ul id="issuesList"></ul>
+          </div>
 
-      <div class="result-card" id="improvedCard">
-        <div class="card-header improved">✨ Improved Code</div>
-        <div class="code-toolbar">
-          <button class="copy-btn" onclick="copyCode()">Copy</button>
-        </div>
-        <pre><code id="improvedCode" class="language-javascript"></code></pre>
-      </div>
-    </section>
+          <div class="result-card" id="suggestionsCard">
+            <div class="card-header suggestions">💡 Suggestions</div>
+            <ul id="suggestionsList"></ul>
+          </div>
 
-    <div id="errorBox" class="error-box hidden"></div>
-  </main>
+          <div class="result-card" id="improvedCard">
+            <div class="card-header improved">✨ Improved Code</div>
+            <div class="code-toolbar">
+              <button class="copy-btn" onclick="copyCode()">Copy</button>
+            </div>
+            <pre><code id="improvedCode" class="language-javascript"></code></pre>
+          </div>
+        </section>
 
-  <footer>
-    Built by Kushal · Powered by AI · RNS PROJECT 
-  </footer>
+        <div id="errorBox" class="error-box hidden"></div>
+      </main>
+
+      <footer>Built by Kushal · Powered by AI · RNS PROJECT</footer>
+    </div>
+  </div>
+
+  <div id="deleteModal" class="modal hidden">
+  <div class="modal-box">
+    <h3>Delete Review?</h3>
+    <p>This action cannot be undone.</p>
+
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="delete-btn" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
   <script src="script.js"></script>
 </body>
-
 </html>
