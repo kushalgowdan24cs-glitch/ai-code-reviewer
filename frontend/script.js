@@ -417,9 +417,19 @@ function logout() {
 
 function toggleMenu(e, id) {
   e.stopPropagation();
+  const menu = document.getElementById(`menu-${id}`);
+  const isHidden = menu.classList.contains("hidden");
+  // Close all menus first
   document.querySelectorAll(".history-menu").forEach(m => m.classList.add("hidden"));
-  document.getElementById(`menu-${id}`).classList.toggle("hidden");
+  // Open this one only if it was closed
+  if (isHidden) menu.classList.remove("hidden");
 }
+
+// Close menus when clicking anywhere on page
+document.addEventListener("click", () => {
+  document.querySelectorAll(".history-menu").forEach(m => m.classList.add("hidden"));
+});
+
 let renameId = null;
 
 function renameReview(id) {

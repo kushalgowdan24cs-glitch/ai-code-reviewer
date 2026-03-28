@@ -227,9 +227,10 @@
             background: var(--accent);
             width: 100%;
         }
-        .head{
+
+        .head {
             display: flex;
-            justify-content:space-between;
+            justify-content: space-between;
             padding: 10px;
         }
     </style>
@@ -267,32 +268,77 @@
                     <!-- Name (Register only) -->
                     <div class="form-group" id="nameGroup">
                         <label class="form-label">Full Name</label>
-                        <input type="text" id="nameInput" class="form-input" placeholder="Enter your full name" autocomplete="off"/>
+                        <input type="text" id="nameInput" class="form-input" placeholder="Enter your full name"
+                            autocomplete="off"
+                            onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('emailInput').focus()}" />
+
                     </div>
 
                     <!-- Email -->
                     <div class="form-group">
                         <label class="form-label">Email Address</label>
-                        <input type="email" id="emailInput" class="form-input" placeholder="Enter your email address" autocomplete="off"/>
+                        <input type="email" id="emailInput" class="form-input" placeholder="Enter your email address"
+                            autocomplete="off"
+                            onkeydown="if(event.key==='Enter'){event.preventDefault(); document.getElementById('passwordInput').focus()}" />
                     </div>
 
                     <!-- Password -->
                     <div class="form-group">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <label class="form-label">Password</label>
-                            <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
+                            <a href="#" class="forgot-link" id="forgotLink"
+                                onclick="event.preventDefault(); openForgotSection()">Forgot password?</a>
                         </div>
                         <input type="password" id="passwordInput" class="form-input" placeholder="Enter your passsword"
-                            oninput="checkStrength(this.value)" autocomplete="new-password"/>
+                            oninput="checkStrength(this.value)" autocomplete="new-password" />
                         <div class="strength-bar" id="strengthBar"></div>
                     </div>
 
                     <!-- Submit Button -->
-                    <button type="submit" class="auth-btn" id="authSubmitBtn" >
+                    <button type="submit" class="auth-btn" id="authSubmitBtn">
                         Sign In →
                     </button>
 
                 </form>
+
+                <!-- Forgot Password Flow -->
+                <div id="forgotSection" class="hidden">
+                    <div style="margin-top:1rem;">
+
+                        <!-- Step 1: Enter email -->
+                        <div id="forgotStep1">
+                            <p
+                                style="font-family:var(--font-mono);font-size:0.8rem;color:var(--muted);margin-bottom:0.8rem;">
+                                Enter your registered email to receive OTP
+                            </p>
+                            <input type="email" id="forgotEmail" class="form-input" placeholder="your@email.com"
+                                style="margin-bottom:0.8rem;" />
+                            <button class="auth-btn" onclick="sendForgotOTP()" style="background:var(--accent2);">
+                                Send OTP →
+                            </button>
+                        </div>
+
+                        <!-- Step 2: Enter OTP + new password -->
+                        <div id="forgotStep2" class="hidden">
+                            <p
+                                style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent);margin-bottom:0.8rem;">
+                                ✅ OTP sent! Check your email.
+                            </p>
+                            <input type="text" id="otpInput" class="form-input" placeholder="Enter 6-digit OTP"
+                                style="margin-bottom:0.8rem;" maxlength="6" />
+                            <input type="password" id="newPasswordInput" class="form-input"
+                                placeholder="New password (min 6 chars)" style="margin-bottom:0.8rem;" />
+                            <button class="auth-btn" onclick="resetPassword()" style="background:var(--accent);">
+                                Reset Password →
+                            </button>
+                        </div>
+
+                        <button onclick="closeForgotSection()"
+                            style="width:100%;margin-top:0.8rem;background:none;border:none;color:var(--muted);font-family:var(--font-mono);font-size:0.78rem;cursor:pointer;">
+                            ← Back to Login
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Divider -->
                 <div class="divider">
@@ -315,148 +361,206 @@
     </div>
 
     <script>
-       const API_URL = "http://localhost:3000";
-let currentTab = "login";
+        const API_URL = "http://localhost:3000";
+        let currentTab = "login";
 
-// ===== Tab Switcher =====
-function switchTab(tab) {
-  currentTab = tab;
-  const isLogin = tab === "login";
+        // ===== Tab Switcher =====
+        function switchTab(tab) {
+            currentTab = tab;
+            const isLogin = tab === "login";
 
-  document.getElementById("loginTab").classList.toggle("active", isLogin);
-  document.getElementById("registerTab").classList.toggle("active", !isLogin);
-  document.getElementById("nameGroup").style.display = isLogin ? "none" : "block";
-  document.getElementById("authTitle").textContent = isLogin ? "Welcome Back" : "Create Account";
-  document.getElementById("authSubtitle").textContent = isLogin
-    ? "Sign in to your CodeSense account"
-    : "Join CodeSense and start reviewing code";
-  document.getElementById("authSubmitBtn").textContent = isLogin ? "Sign In →" : "Create Account →";
-  document.getElementById("forgotLink").style.display = isLogin ? "block" : "none";
-  document.getElementById("switchText").textContent = isLogin ? "Don't have an account?" : "Already have an account?";
-  document.getElementById("switchLink").textContent = isLogin ? "Register →" : "Login →";
-  document.getElementById("switchLink").onclick = (e) => { e.preventDefault(); switchTab(isLogin ? "register" : "login"); };
-  hideMessages();
-}
+            document.getElementById("loginTab").classList.toggle("active", isLogin);
+            document.getElementById("registerTab").classList.toggle("active", !isLogin);
+            document.getElementById("nameGroup").style.display = isLogin ? "none" : "block";
+            document.getElementById("authTitle").textContent = isLogin ? "Welcome Back" : "Create Account";
+            document.getElementById("authSubtitle").textContent = isLogin
+                ? "Sign in to your CodeSense account"
+                : "Join CodeSense and start reviewing code";
+            document.getElementById("authSubmitBtn").textContent = isLogin ? "Sign In →" : "Create Account →";
+            document.getElementById("forgotLink").style.display = isLogin ? "block" : "none";
+            document.getElementById("switchText").textContent = isLogin ? "Don't have an account?" : "Already have an account?";
+            document.getElementById("switchLink").textContent = isLogin ? "Register →" : "Login →";
+            document.getElementById("switchLink").onclick = (e) => { e.preventDefault(); switchTab(isLogin ? "register" : "login"); };
+            hideMessages();
+        }
 
-// ===== Form Submit =====
-async function handleSubmit(e) {
-  e.preventDefault();
-  hideMessages();
+        // ===== Form Submit =====
+        async function handleSubmit(e) {
+            e.preventDefault();
+            hideMessages();
 
-  const email    = document.getElementById("emailInput").value.trim();
-  const password = document.getElementById("passwordInput").value.trim();
-  const btn      = document.getElementById("authSubmitBtn");
+            const email = document.getElementById("emailInput").value.trim();
+            const password = document.getElementById("passwordInput").value.trim();
+            const btn = document.getElementById("authSubmitBtn");
 
-  if (!email || !password) { showError("Please fill in all fields."); return; }
+            if (!email || !password) { showError("Please fill in all fields."); return; }
 
-  btn.disabled = true;
-  btn.textContent = "Please wait...";
+            btn.disabled = true;
+            btn.textContent = "Please wait...";
 
-  try {
-    if (currentTab === "login") {
-      await handleLogin(email, password);
-    } else {
-      const name = document.getElementById("nameInput").value.trim();
-      if (!name) { showError("Please enter your full name."); btn.disabled = false; btn.textContent = "Create Account →"; return; }
-      await handleRegister(name, email, password);
-    }
-  } catch (err) {
-    showError("Network error. Make sure backend is running on port 3000.");
-    btn.disabled = false;
-    btn.textContent = currentTab === "login" ? "Sign In →" : "Create Account →";
-  }
-}
+            try {
+                if (currentTab === "login") {
+                    await handleLogin(email, password);
+                } else {
+                    const name = document.getElementById("nameInput").value.trim();
+                    if (!name) { showError("Please enter your full name."); btn.disabled = false; btn.textContent = "Create Account →"; return; }
+                    await handleRegister(name, email, password);
+                }
+            } catch (err) {
+                showError("Network error. Make sure backend is running on port 3000.");
+                btn.disabled = false;
+                btn.textContent = currentTab === "login" ? "Sign In →" : "Create Account →";
+            }
+        }
 
-// ===== Login =====
-async function handleLogin(email, password) {
-  const btn = document.getElementById("authSubmitBtn");
-  try {
-    const res  = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) { showError(data.error || "Login failed."); return; }
+        // ===== Login =====
+        async function handleLogin(email, password) {
+            const btn = document.getElementById("authSubmitBtn");
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password }),
+                });
+                const data = await res.json();
+                if (!res.ok) { showError(data.error || "Login failed."); return; }
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    showSuccess(`Welcome back, ${data.user.name}! Redirecting...`);
-    setTimeout(() => { window.location.href = "index.html"; }, 1000);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Sign In →";
-  }
-}
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                showSuccess(`Welcome back, ${data.user.name}! Redirecting...`);
+                setTimeout(() => { window.location.href = "index.html"; }, 1000);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Sign In →";
+            }
+        }
 
-// ===== Register =====
-async function handleRegister(name, email, password) {
-  const btn = document.getElementById("authSubmitBtn");
-  try {
-    if (password.length < 6) { showError("Password must be at least 6 characters."); return; }
-    const res  = await fetch(`${API_URL}/auth/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) { showError(data.error || "Registration failed."); return; }
+        // ===== Register =====
+        async function handleRegister(name, email, password) {
+            const btn = document.getElementById("authSubmitBtn");
+            try {
+                if (password.length < 6) { showError("Password must be at least 6 characters."); return; }
+                const res = await fetch(`${API_URL}/auth/register`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, password }),
+                });
+                const data = await res.json();
+                if (!res.ok) { showError(data.error || "Registration failed."); return; }
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    showSuccess(`Account created! Welcome, ${data.user.name}! Redirecting...`);
-    setTimeout(() => { window.location.href = "index.html"; }, 1000);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Create Account →";
-  }
-}
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                showSuccess(`Account created! Welcome, ${data.user.name}! Redirecting...`);
+                setTimeout(() => { window.location.href = "index.html"; }, 1000);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "Create Account →";
+            }
+        }
 
-// ===== Password Strength =====
-function checkStrength(password) {
-  const bar = document.getElementById("strengthBar");
-  if (!password)           { bar.className = "strength-bar"; return; }
-  if (password.length < 6) { bar.className = "strength-bar strength-weak"; return; }
-  if (password.length < 10){ bar.className = "strength-bar strength-medium"; return; }
-  bar.className = "strength-bar strength-strong";
-}
+        // ===== Password Strength =====
+        function checkStrength(password) {
+            const bar = document.getElementById("strengthBar");
+            if (!password) { bar.className = "strength-bar"; return; }
+            if (password.length < 6) { bar.className = "strength-bar strength-weak"; return; }
+            if (password.length < 10) { bar.className = "strength-bar strength-medium"; return; }
+            bar.className = "strength-bar strength-strong";
+        }
 
-// ===== Helpers =====
-function showError(msg) {
-  const el = document.getElementById("authError");
-  el.textContent = "⚠ " + msg;
-  el.classList.remove("hidden");
-  document.getElementById("authSuccess").classList.add("hidden");
-}
+        // ===== Helpers =====
+        function showError(msg) {
+            const el = document.getElementById("authError");
+            el.textContent = "⚠ " + msg;
+            el.classList.remove("hidden");
+            document.getElementById("authSuccess").classList.add("hidden");
+        }
 
-function showSuccess(msg) {
-  const el = document.getElementById("authSuccess");
-  el.textContent = "✅ " + msg;
-  el.classList.remove("hidden");
-  document.getElementById("authError").classList.add("hidden");
-}
+        function showSuccess(msg) {
+            const el = document.getElementById("authSuccess");
+            el.textContent = "✅ " + msg;
+            el.classList.remove("hidden");
+            document.getElementById("authError").classList.add("hidden");
+        }
 
-function hideMessages() {
-  document.getElementById("authError").classList.add("hidden");
-  document.getElementById("authSuccess").classList.add("hidden");
-}
+        function hideMessages() {
+            document.getElementById("authError").classList.add("hidden");
+            document.getElementById("authSuccess").classList.add("hidden");
+        }
 
-// ===== IMPORTANT: Clear any bad token, then check =====
-// Clear inputs on page load always
-window.onload = () => {
-  // Always clear inputs first
-  document.getElementById("emailInput").value = "";
-  document.getElementById("passwordInput").value = "";
-  document.getElementById("nameInput").value = "";
+        // ===== IMPORTANT: Clear any bad token, then check =====
+        // Clear inputs on page load always
+        window.onload = () => {
+            // Always clear inputs first
+            document.getElementById("emailInput").value = "";
+            document.getElementById("passwordInput").value = "";
+            document.getElementById("nameInput").value = "";
 
-  // Only redirect if valid token exists
-  const token = localStorage.getItem("token");
-  const user  = localStorage.getItem("user");
-  if (token && user && user !== "null") {
-    window.location.href = "index.html";
-  }
-};
-        
+            // Only redirect if valid token exists
+            const token = localStorage.getItem("token");
+            const user = localStorage.getItem("user");
+            if (token && user && user !== "null") {
+                window.location.href = "index.html";
+            }
+        };
+
+        // ===== Forgot Password =====
+        function openForgotSection() {
+            document.getElementById("forgotSection").classList.remove("hidden");
+            document.querySelector("form").classList.add("hidden");
+            hideMessages();
+        }
+
+        function closeForgotSection() {
+            document.getElementById("forgotSection").classList.add("hidden");
+            document.getElementById("forgotStep1").classList.remove("hidden");
+            document.getElementById("forgotStep2").classList.add("hidden");
+            document.querySelector("form").classList.remove("hidden");
+            hideMessages();
+        }
+
+        async function sendForgotOTP() {
+            const email = document.getElementById("forgotEmail").value.trim();
+            if (!email) { showError("Please enter your email."); return; }
+
+            try {
+                const res = await fetch(`${API_URL}/auth/forgot-password`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email }),
+                });
+                const data = await res.json();
+                if (!res.ok) { showError(data.error); return; }
+
+                document.getElementById("forgotStep1").classList.add("hidden");
+                document.getElementById("forgotStep2").classList.remove("hidden");
+            } catch (err) {
+                showError("Network error. Make sure backend is running.");
+            }
+        }
+
+        async function resetPassword() {
+            const email = document.getElementById("forgotEmail").value.trim();
+            const otp = document.getElementById("otpInput").value.trim();
+            const newPassword = document.getElementById("newPasswordInput").value;
+
+            if (!otp || !newPassword) { showError("Please fill all fields."); return; }
+
+            try {
+                const res = await fetch(`${API_URL}/auth/reset-password`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, otp, newPassword }),
+                });
+                const data = await res.json();
+                if (!res.ok) { showError(data.error); return; }
+
+                showSuccess("Password reset! Please login with your new password.");
+                closeForgotSection();
+            } catch (err) {
+                showError("Network error. Try again.");
+            }
+        }
+
     </script>
 </body>
 
