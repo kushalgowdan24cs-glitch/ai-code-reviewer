@@ -17,6 +17,13 @@ const reviewSchema = new mongoose.Schema({
   score:        { type: Number },
   grade:        { type: String },
   summary:      { type: String },
+  time_complexity: {       
+    original:       String,
+    improved:       String,
+    original_label: String,
+    improved_label: String,
+    explanation:    String,
+  },
   createdAt:    { type: Date, default: Date.now },
 });
 

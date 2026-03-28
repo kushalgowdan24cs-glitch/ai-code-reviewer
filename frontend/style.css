@@ -771,3 +771,59 @@ footer {
     transform: scale(1);
   }
 }
+/* ===== Time Complexity ===== */
+.card-header.complexity { color: #7c6fff; background: #14142a; }
+
+.complexity-body { padding: 1.2rem; }
+
+.complexity-labels {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.complexity-label { text-align: center; }
+
+.complexity-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.4rem;
+}
+
+.original-badge { background: #3d1515; color: #ff6b6b; }
+.improved-badge { background: #0d2d1e; color: #00e5a0; }
+
+.complexity-desc {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  max-width: 180px;
+  line-height: 1.4;
+}
+
+.complexity-arrow { font-size: 1.8rem; color: var(--accent2); }
+
+.complexity-chart-wrap {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.complexity-explanation {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.6;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  border-left: 3px solid var(--accent2);
+}

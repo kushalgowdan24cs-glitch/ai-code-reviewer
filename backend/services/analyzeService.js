@@ -39,9 +39,15 @@ Return this exact JSON structure:
   "improved_code": "full corrected and improved code as a string",
   "score": 72,
   "grade": "B+",
-  "summary": "one line summary of overall code quality"
+  "summary": "one line summary of overall code quality",
+  "time_complexity": {
+    "original": "O(n)",
+    "improved": "O(1)",
+    "original_label": "brief description of original complexity",
+    "improved_label": "brief description of improved complexity",
+    "explanation": "2-3 sentence explanation of why complexity changed"
+  }
 }
-
 Only include issue types that actually exist in the code. If no issues of a type exist, skip it.
 The score should be out of 100 based on overall quality.
 
@@ -76,6 +82,7 @@ ${code}
     score: parsed.score || 0,
     grade: parsed.grade || "N/A",
     summary: parsed.summary || "",
+    time_complexity: parsed.time_complexity || null,
   });
 
   parsed.reviewId = saved._id;

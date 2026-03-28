@@ -19,7 +19,7 @@ window.onload = () => {
       document.getElementById("sidebarUserName").textContent = user.name;
       document.getElementById("userChip").textContent = user.name;
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // ✅ ADD THIS BLOCK HERE
   document.getElementById("confirmDeleteBtn").onclick = async () => {
@@ -33,6 +33,27 @@ window.onload = () => {
     });
 
     closeModal();
+    loadSidebarHistory();
+  };
+
+  document.getElementById("confirmRenameBtn").onclick = async () => {
+    if (!renameId) return;
+
+    const newName = document.getElementById("renameInput").value.trim();
+    if (!newName) return alert("Enter a valid name");
+
+    const token = localStorage.getItem("token");
+
+    await fetch(`${HISTORY_API}/${renameId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({ title: newName })
+    });
+
+    closeRenameModal();
     loadSidebarHistory();
   };
 
@@ -176,6 +197,105 @@ function getBadgeClass(type) {
   return map[type] || "badge-default";
 }
 
+// ===== Time Complexity Chart =====
+let complexityChartInstance = null;
+
+function renderComplexityChart(tc) {
+  const card = document.getElementById("complexityCard");
+
+  if (!tc) { card.classList.add("hidden"); return; }
+  card.classList.remove("hidden");
+
+  // Update Big-O labels
+  document.getElementById("origComplexity").textContent = tc.original || "O(?)";
+  document.getElementById("impComplexity").textContent = tc.improved || "O(?)";
+  document.getElementById("origLabel").textContent = tc.original_label || "Original Code";
+  document.getElementById("impLabel").textContent = tc.improved_label || "Improved Code";
+  document.getElementById("complexityExplanation").textContent = tc.explanation || "";
+
+  // Map Big-O notation → growth data points
+  function toValues(notation) {
+    const n = [1, 2, 4, 8, 16, 32];
+    if (!notation) return n.map(x => x);
+    const s = notation.toLowerCase();
+    if (s.includes("1")) return n.map(() => 1);
+    if (s.includes("log")) return n.map(x => +(Math.log2(x) || 0.1).toFixed(2));
+    if (s.includes("n²") || s.includes("n^2") || s.includes("n2"))
+      return n.map(x => x * x);
+    if (s.includes("n log") || s.includes("nlog"))
+      return n.map(x => +(x * (Math.log2(x) || 0.1)).toFixed(2));
+    if (s.includes("2^n")) return n.map(x => Math.pow(2, x));
+    return n.map(x => x); // default O(n)
+  }
+
+  // Destroy old chart
+  if (complexityChartInstance) {
+    complexityChartInstance.destroy();
+    complexityChartInstance = null;
+  }
+
+  const ctx = document.getElementById("complexityChart").getContext("2d");
+  complexityChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["n=1", "n=2", "n=4", "n=8", "n=16", "n=32"],
+      datasets: [
+        {
+          label: `Original ${tc.original || ""}`,
+          data: toValues(tc.original),
+          borderColor: "#ff6b6b",
+          backgroundColor: "rgba(255,107,107,0.07)",
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: "#ff6b6b",
+          pointRadius: 4,
+        },
+        {
+          label: `Improved ${tc.improved || ""}`,
+          data: toValues(tc.improved),
+          borderColor: "#00e5a0",
+          backgroundColor: "rgba(0,229,160,0.07)",
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: "#00e5a0",
+          pointRadius: 4,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          labels: {
+            color: "#e2e8f0",
+            font: { family: "JetBrains Mono", size: 11 },
+          },
+        },
+        tooltip: {
+          backgroundColor: "#13161e",
+          borderColor: "#2a2f3d",
+          borderWidth: 1,
+          titleColor: "#00e5a0",
+          bodyColor: "#e2e8f0",
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: "#6b7280", font: { family: "JetBrains Mono", size: 10 } },
+          grid: { color: "#2a2f3d" },
+        },
+        y: {
+          ticks: { color: "#6b7280", font: { family: "JetBrains Mono", size: 10 } },
+          grid: { color: "#2a2f3d" },
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+}
+
 // ===== Display Results =====
 function displayResults(data) {
   const { issues, suggestions, improved_code, score, grade, summary } = data;
@@ -234,6 +354,8 @@ function displayResults(data) {
     document.getElementById("improvedCard").classList.add("hidden");
   }
 
+  // Time Complexity Graph
+  renderComplexityChart(data.time_complexity);
   document.getElementById("resultsSection").classList.remove("hidden");
 }
 
@@ -281,23 +403,21 @@ function toggleMenu(e, id) {
   document.querySelectorAll(".history-menu").forEach(m => m.classList.add("hidden"));
   document.getElementById(`menu-${id}`).classList.toggle("hidden");
 }
-async function renameReview(id) {
-  const newName = prompt("Enter new name:");
-  if (!newName) return;
+let renameId = null;
 
-  const token = localStorage.getItem("token");
+function renameReview(id) {
+  renameId = id;
+  document.getElementById("renameModal").classList.remove("hidden");
 
-  await fetch(`${HISTORY_API}/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
-    body: JSON.stringify({ title: newName })
-  });
-
-  loadSidebarHistory();
+  // clear old value
+  document.getElementById("renameInput").value = "";
 }
+
+function closeRenameModal() {
+  document.getElementById("renameModal").classList.add("hidden");
+  renameId = null;
+}
+
 let deleteId = null;
 
 function deleteReview(id) {
