@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CodeSense AI — Review History</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    /* ===== History Page Styles ===== */
+    .history-page { display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ===== Top Nav ===== */
+    .history-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 60px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo { font-size: 1.1rem; font-weight: 800; color: var(--accent); }
+
+    .nav-links { display: flex; gap: 2rem; }
+
+    .nav-link {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover { color: var(--text); }
+    .nav-link.active { color: var(--accent); }
+
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+
+    .nav-user {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .nav-logout {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--warn);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .nav-logout:hover { background: var(--border); }
+
+    /* ===== Page Content ===== */
+    .history-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* ===== Page Header ===== */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .page-header h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+
+    .page-header p {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .new-review-link {
+      background: var(--accent);
+      color: #000;
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 0.65rem 1.2rem;
+      border-radius: 10px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+
+    .new-review-link:hover { opacity: 0.85; }
+
+    /* ===== Stats Row ===== */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: var(--font-ui);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    /* ===== Search + Filter ===== */
+    .filter-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      padding: 0.65rem 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      min-width: 200px;
+    }
+
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
+
+    .filter-select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ===== Table ===== */
+    .history-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 120px 1fr 80px 90px 120px 100px;
+      padding: 0.8rem 1.5rem;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      gap: 1rem;
+    }
+
+    .table-header span {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 80px 90px 120px 100px;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      gap: 1rem;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .table-row:last-child { border-bottom: none; }
+    .table-row:hover { background: var(--surface2); }
+
+    /* Lang Badge */
+    .lang-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+    }
+
+    /* Preview text */
+    .code-preview {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Issue count */
+    .issue-count {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* Score chip */
+    .score-chip {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    /* Date */
+    .row-date {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    /* View button */
+    .view-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .view-btn:hover { background: var(--border); }
+
+    /* ===== Empty State ===== */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+    .empty-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-sub {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    /* ===== Loading ===== */
+    .loading-state {
+      text-align: center;
+      padding: 3rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* ===== Pagination ===== */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .pagination-info {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .pagination-btns { display: flex; gap: 0.5rem; }
+
+    .page-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .page-btn:hover { background: var(--surface2); }
+    .page-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ===== Delete Modal ===== */
+    .modal {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+    }
+
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+      width: 320px;
+      text-align: center;
+    }
+
+    .modal-box h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .modal-box p { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem; }
+
+    .modal-actions { display: flex; gap: 0.8rem; justify-content: center; }
+
+    .cancel-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); padding: 0.6rem 1.2rem;
+      border-radius: 8px; cursor: pointer; font-family: var(--font-mono); font-size: 0.82rem;
+    }
+
+    .confirm-del-btn {
+      background: var(--warn); border: none; color: #fff;
+      padding: 0.6rem 1.2rem; border-radius: 8px;
+      cursor: pointer; font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700;
+    }
+
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .table-header, .table-row {
+        grid-template-columns: 90px 1fr 70px 80px;
+      }
+      .table-header span:nth-child(5),
+      .table-header span:nth-child(6),
+      .table-row > *:nth-child(5),
+      .table-row > *:nth-child(6) { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="history-page">
+
+  <!-- ===== NAV ===== -->
+  <nav class="history-nav">
+    <div class="nav-logo">⬡ CodeSense AI</div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Dashboard</a>
+      <a href="history.html" class="nav-link active">History</a>
+    </div>
+    <div class="nav-right">
+      <span class="nav-user" id="navUser"></span>
+      <button class="nav-logout" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- ===== CONTENT ===== -->
+  <div class="history-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h1>🕘 Review History</h1>
+        <p>All your past code reviews — click any row to view full results</p>
+      </div>
+      <a href="index.html" class="new-review-link">+ New Review</a>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" id="totalReviews">—</div>
+        <div class="stat-label">Total Reviews</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="avgScore" style="color:var(--accent2)">—</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="bestScore" style="color:#00e5a0">—</div>
+        <div class="stat-label">Best Score</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="totalIssues" style="color:var(--warn)">—</div>
+        <div class="stat-label">Issues Fixed</div>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <input type="text" class="search-input" id="searchInput"
+        placeholder="🔍  Search by language or summary..." oninput="filterReviews()"/>
+      <select class="filter-select" id="langFilter" onchange="filterReviews()">
+        <option value="">All Languages</option>
+        <option value="javascript">JavaScript</option>
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="c++">C++</option>
+        <option value="other">Other</option>
+      </select>
+      <select class="filter-select" id="scoreFilter" onchange="filterReviews()">
+        <option value="">All Scores</option>
+        <option value="high">High (80+)</option>
+        <option value="mid">Medium (50–79)</option>
+        <option value="low">Low (below 50)</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="history-table" id="historyTable">
+      <div class="table-header">
+        <span>Language</span>
+        <span>Summary</span>
+        <span>Issues</span>
+        <span>Score</span>
+        <span>Date</span>
+        <span>Action</span>
+      </div>
+      <div id="tableBody">
+        <div class="loading-state">⏳ Loading your reviews...</div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="paginationBar">
+      <span class="pagination-info" id="paginationInfo"></span>
+      <div class="pagination-btns" id="paginationBtns"></div>
+    </div>
+
+  </div>
+
+  <footer>Built by Kushal Gowda · CodeSense AI · RNS Project 2026</footer>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal hidden" id="deleteModal">
+  <div class="modal-box">
+    <h3>Delete Review?</h3>
+    <p>This action cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="confirm-del-btn" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API    = "http://localhost:3000";
+const HIST   = `${API}/history`;
+let allReviews   = [];
+let filtered     = [];
+let currentPage  = 1;
+const perPage    = 8;
+let deleteTarget = null;
+
+// ===== Auth Guard — runs IMMEDIATELY =====
+const token = localStorage.getItem("token");
+const user  = JSON.parse(localStorage.getItem("user") || "null");
+if (!token || !user) {
+  window.location.href = "login.html";
+}
+
+// ===== On Page Load =====
+window.onload = async () => {
+  document.getElementById("navUser").textContent = `👤 ${user.name}`;
+  await loadHistory();
+};
+
+// ===== Load History =====
+async function loadHistory() {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(HIST, {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    if (res.status === 401) { logout(); return; }
+    if (!res.ok) throw new Error("Failed to load");
+
+    allReviews = await res.json();
+    filtered   = [...allReviews];
+
+    updateStats();
+    renderTable();
+  } catch (err) {
+    document.getElementById("tableBody").innerHTML =
+      `<div class="empty-state"><div class="empty-icon">⚠️</div>
+       <div class="empty-title">Failed to load history</div>
+       <div class="empty-sub">${err.message}</div></div>`;
+  }
+}
+
+// ===== Stats =====
+function updateStats() {
+  const total  = allReviews.length;
+  const scores = allReviews.map(r => r.score).filter(s => s != null);
+  const avg    = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  const best   = scores.length ? Math.max(...scores) : 0;
+  const issues = allReviews.reduce((a,r) => a + (r.issues?.length || 0), 0);
+
+  document.getElementById("totalReviews").textContent = total;
+  document.getElementById("avgScore").textContent     = avg || "—";
+  document.getElementById("bestScore").textContent    = best || "—";
+  document.getElementById("totalIssues").textContent  = issues;
+}
+
+// ===== Filter =====
+function filterReviews() {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const lang   = document.getElementById("langFilter").value.toLowerCase();
+  const score  = document.getElementById("scoreFilter").value;
+
+  filtered = allReviews.filter(r => {
+    const matchSearch = !search ||
+      (r.language || "").toLowerCase().includes(search) ||
+      (r.summary  || "").toLowerCase().includes(search);
+
+    const matchLang = !lang || (r.language || "").toLowerCase() === lang;
+
+    const s = r.score || 0;
+    const matchScore = !score ||
+      (score === "high" && s >= 80) ||
+      (score === "mid"  && s >= 50 && s < 80) ||
+      (score === "low"  && s < 50);
+
+    return matchSearch && matchLang && matchScore;
+  });
+
+  currentPage = 1;
+  renderTable();
+}
+
+// ===== Render Table =====
+function renderTable() {
+  const body    = document.getElementById("tableBody");
+  const start   = (currentPage - 1) * perPage;
+  const end     = start + perPage;
+  const page    = filtered.slice(start, end);
+
+  if (filtered.length === 0) {
+    body.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">No reviews found</div>
+        <div class="empty-sub">Try adjusting your filters or start a new review</div>
+        <a href="index.html" class="new-review-link" style="margin-top:1rem;display:inline-block;">+ New Review</a>
+      </div>`;
+    document.getElementById("paginationInfo").textContent = "";
+    document.getElementById("paginationBtns").innerHTML   = "";
+    return;
+  }
+
+  body.innerHTML = page.map(r => {
+    const lang    = r.language || "code";
+    const score   = r.score   != null ? r.score : "—";
+    const grade   = r.grade   || "";
+    const issues  = r.issues?.length || 0;
+    const summary = r.summary ? r.summary.slice(0,60) + (r.summary.length>60?"…":"") : `${lang} review`;
+    const date    = new Date(r.createdAt).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+
+    const scoreNum   = parseInt(score) || 0;
+    const scoreColor = scoreNum >= 80 ? "#00e5a0" : scoreNum >= 50 ? "#ffd166" : "#ff6b6b";
+    const langColor  = getLangColor(lang);
+
+    return `
+    <div class="table-row" onclick="viewReview('${r._id}')">
+      <div>
+        <span class="lang-badge" style="background:${langColor}22; color:${langColor}">
+          ${lang}
+        </span>
+      </div>
+      <div class="code-preview">${summary}</div>
+      <div class="issue-count" style="color:${issues===0?'#00e5a0':'#ff6b6b'}">${issues}</div>
+      <div class="score-chip" style="color:${scoreColor}">${score}/100</div>
+      <div class="row-date">${date}</div>
+      <div style="display:flex;gap:0.4rem;align-items:center;">
+        <a class="view-btn" onclick="event.stopPropagation(); viewReview('${r._id}')">View →</a>
+        <button class="view-btn" style="color:var(--warn);border-color:var(--warn);"
+          onclick="event.stopPropagation(); openDeleteModal('${r._id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join("");
+
+  renderPagination();
+}
+
+// ===== Pagination =====
+function renderPagination() {
+  const total    = filtered.length;
+  const pages    = Math.ceil(total / perPage);
+  const start    = (currentPage-1)*perPage+1;
+  const end      = Math.min(currentPage*perPage, total);
+
+  document.getElementById("paginationInfo").textContent =
+    `Showing ${start}–${end} of ${total} reviews`;
+
+  const btns = document.getElementById("paginationBtns");
+  btns.innerHTML = "";
+
+  // Prev
+  const prev = document.createElement("button");
+  prev.className = "page-btn";
+  prev.textContent = "← Prev";
+  prev.disabled = currentPage === 1;
+  prev.onclick = () => { currentPage--; renderTable(); };
+  btns.appendChild(prev);
+
+  // Page numbers
+  for (let i = 1; i <= pages; i++) {
+    const btn = document.createElement("button");
+    btn.className = `page-btn ${i === currentPage ? "active" : ""}`;
+    btn.textContent = i;
+    btn.onclick = () => { currentPage = i; renderTable(); };
+    btns.appendChild(btn);
+  }
+
+  // Next
+  const next = document.createElement("button");
+  next.className = "page-btn";
+  next.textContent = "Next →";
+  next.disabled = currentPage === pages;
+  next.onclick = () => { currentPage++; renderTable(); };
+  btns.appendChild(next);
+}
+
+// ===== View Review =====
+function viewReview(id) {
+  // Store review ID and redirect to index.html to show it
+  localStorage.setItem("viewReviewId", id);
+  window.location.href = "index.html";
+}
+
+// ===== Delete =====
+function openDeleteModal(id) {
+  deleteTarget = id;
+  document.getElementById("deleteModal").classList.remove("hidden");
+  document.getElementById("confirmDeleteBtn").onclick = confirmDelete;
+}
+
+function closeDeleteModal() {
+  document.getElementById("deleteModal").classList.add("hidden");
+  deleteTarget = null;
+}
+
+async function confirmDelete() {
+  if (!deleteTarget) return;
+  const token = localStorage.getItem("token");
+  try {
+    await fetch(`${HIST}/${deleteTarget}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    closeDeleteModal();
+    await loadHistory();
+  } catch (err) {
+    alert("Failed to delete. Try again.");
+  }
+}
+
+// ===== Helpers =====
+function getLangColor(lang) {
+  const map = {
+    javascript: "#f7df1e",
+    python:     "#7c6fff",
+    java:       "#ff6b6b",
+    "c++":      "#48cae4",
+    other:      "#00e5a0",
+  };
+  return map[lang.toLowerCase()] || "#00e5a0";
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  window.location.href = "login.html";
+}
+</script>
+</body>
+</html>

@@ -36,6 +36,18 @@
         <span class="new-review-label">New Review</span>
       </button>
 
+      <!-- Sidebar Nav Links -->
+      <div class="sidebar-nav">
+        <a href="index.html" class="sidebar-nav-link active">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="history.html" class="sidebar-nav-link">
+          <span class="nav-icon">🕘</span>
+          <span class="nav-label">History</span>
+        </a>
+      </div>
+
       <!-- History Section -->
       <div class="sidebar-section">
         <div class="sidebar-section-title">Recent Reviews</div>
@@ -63,6 +75,9 @@
       <header class="topbar">
         <button class="topbar-toggle" id="topbarToggle" onclick="toggleSidebar()">☰</button>
         <span class="topbar-title">⬡ CodeSense AI</span>
+        <a href="history.html"
+          style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--accent); text-decoration:none;">🕘
+          History</a>
         <span id="userChip"></span>
       </header>
 

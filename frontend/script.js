@@ -57,6 +57,23 @@ window.onload = () => {
     loadSidebarHistory();
   };
 
+  // Check if redirected from history page to view a specific review
+  const viewId = localStorage.getItem("viewReviewId");
+  if (viewId) {
+    localStorage.removeItem("viewReviewId");
+    const token = localStorage.getItem("token");
+    fetch(`http://localhost:3000/history/${viewId}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById("codeInput").value = data.code || "";
+        displayResults(data);
+        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+      })
+      .catch(() => { });
+  }
+
   loadSidebarHistory();
 };
 
@@ -449,11 +466,11 @@ async function downloadReport() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
 
-  const pageW  = doc.internal.pageSize.getWidth();
-  const pageH  = doc.internal.pageSize.getHeight();
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
   const margin = 15;
-  const col    = pageW - margin * 2;
-  let y        = 0;
+  const col = pageW - margin * 2;
+  let y = 0;
 
   // ── Helper: add new page if needed ──
   function checkPage(needed = 10) {
@@ -505,7 +522,7 @@ async function downloadReport() {
   // Date + language
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const lang = document.getElementById("langSelect").value || "code";
-  const date = new Date().toLocaleDateString("en-IN", { day:"numeric", month:"long", year:"numeric" });
+  const date = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
   doc.setFontSize(8);
   doc.text(`Reviewed by: ${user.name || "User"}   |   Language: ${lang}   |   Date: ${date}`, margin, 31);
 
@@ -514,9 +531,9 @@ async function downloadReport() {
   // ══════════════════════════════════
   // 2. SCORE CARD
   // ══════════════════════════════════
-  const scoreVal  = document.getElementById("scoreCircle")?.textContent || "—";
-  const gradeVal  = document.getElementById("scoreGrade")?.textContent  || "Grade: —";
-  const summaryV  = document.getElementById("scoreSummary")?.textContent || "";
+  const scoreVal = document.getElementById("scoreCircle")?.textContent || "—";
+  const gradeVal = document.getElementById("scoreGrade")?.textContent || "Grade: —";
+  const summaryV = document.getElementById("scoreSummary")?.textContent || "";
 
   doc.setFillColor(19, 22, 30);
   doc.roundedRect(margin, y, col, 22, 3, 3, "F");
@@ -525,7 +542,7 @@ async function downloadReport() {
 
   // Score circle
   const scoreNum = parseInt(scoreVal) || 0;
-  const circleColor = scoreNum >= 80 ? [0,229,160] : scoreNum >= 50 ? [255,209,102] : [255,107,107];
+  const circleColor = scoreNum >= 80 ? [0, 229, 160] : scoreNum >= 50 ? [255, 209, 102] : [255, 107, 107];
   doc.setDrawColor(...circleColor);
   doc.setLineWidth(1.5);
   doc.circle(margin + 14, y + 11, 8, "S");
@@ -553,15 +570,15 @@ async function downloadReport() {
   sectionHeader("🐛  Issues Found  (" + issueItems.length + ")", [62, 21, 21]);
 
   const badgeColors = {
-    "Bug":              [255, 107, 107],
-    "Security":         [255, 159, 67],
-    "Performance":      [124, 111, 255],
-    "Formatting":       [0, 229, 160],
-    "Exception Handling":[199, 125, 255],
-    "Naming":           [72, 202, 228],
-    "Complexity":       [255, 209, 102],
-    "Unused Code":      [173, 181, 189],
-    "Best Practice":    [116, 192, 252],
+    "Bug": [255, 107, 107],
+    "Security": [255, 159, 67],
+    "Performance": [124, 111, 255],
+    "Formatting": [0, 229, 160],
+    "Exception Handling": [199, 125, 255],
+    "Naming": [72, 202, 228],
+    "Complexity": [255, 209, 102],
+    "Unused Code": [173, 181, 189],
+    "Best Practice": [116, 192, 252],
   };
 
   if (issueItems.length === 0) {
@@ -569,12 +586,12 @@ async function downloadReport() {
   } else {
     issueItems.forEach(li => {
       checkPage(10);
-      const badge  = li.querySelector(".issue-badge");
-      const type   = badge ? badge.textContent.trim() : "Issue";
-      const color  = badgeColors[type] || [180, 190, 200];
+      const badge = li.querySelector(".issue-badge");
+      const type = badge ? badge.textContent.trim() : "Issue";
+      const color = badgeColors[type] || [180, 190, 200];
       const lineEl = li.querySelector(".issue-line");
-      const line   = lineEl ? lineEl.textContent.trim() : "";
-      const msg    = li.textContent.replace(type, "").replace(line, "").replace("—","").trim();
+      const line = lineEl ? lineEl.textContent.trim() : "";
+      const msg = li.textContent.replace(type, "").replace(line, "").replace("—", "").trim();
 
       // Type badge
       doc.setFillColor(...color.map(c => Math.round(c * 0.25)));
@@ -628,8 +645,8 @@ async function downloadReport() {
   // 5. TIME COMPLEXITY
   // ══════════════════════════════════
   const origC = document.getElementById("origComplexity")?.textContent;
-  const impC  = document.getElementById("impComplexity")?.textContent;
-  const expC  = document.getElementById("complexityExplanation")?.textContent;
+  const impC = document.getElementById("impComplexity")?.textContent;
+  const expC = document.getElementById("complexityExplanation")?.textContent;
 
   if (origC && origC !== "O(?)") {
     sectionHeader("📈  Time Complexity Analysis", [20, 40, 60]);
