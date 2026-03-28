@@ -443,3 +443,262 @@ document.getElementById("confirmDeleteBtn").onclick = async () => {
   closeModal();
   loadSidebarHistory();
 };
+
+// ===== Download PDF Report =====
+async function downloadReport() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+  const pageW  = doc.internal.pageSize.getWidth();
+  const pageH  = doc.internal.pageSize.getHeight();
+  const margin = 15;
+  const col    = pageW - margin * 2;
+  let y        = 0;
+
+  // ── Helper: add new page if needed ──
+  function checkPage(needed = 10) {
+    if (y + needed > pageH - 15) {
+      doc.addPage();
+      y = 20;
+    }
+  }
+
+  // ── Helper: draw section header ──
+  function sectionHeader(label, color) {
+    checkPage(14);
+    doc.setFillColor(...color);
+    doc.roundedRect(margin, y, col, 9, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255);
+    doc.text(label, margin + 4, y + 6.2);
+    y += 13;
+  }
+
+  // ── Helper: body text ──
+  function bodyText(text, indent = 0, size = 9, color = [180, 190, 200]) {
+    checkPage(7);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(size);
+    doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(text, col - indent - 4);
+    doc.text(lines, margin + indent, y);
+    y += lines.length * (size * 0.45) + 2;
+  }
+
+  // ══════════════════════════════════
+  // 1. HEADER BANNER
+  // ══════════════════════════════════
+  doc.setFillColor(13, 15, 20);
+  doc.rect(0, 0, pageW, 38, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.setTextColor(0, 229, 160);
+  doc.text("CodeSense AI", margin, 16);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.setTextColor(107, 114, 128);
+  doc.text("Code Review Report", margin, 24);
+
+  // Date + language
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const lang = document.getElementById("langSelect").value || "code";
+  const date = new Date().toLocaleDateString("en-IN", { day:"numeric", month:"long", year:"numeric" });
+  doc.setFontSize(8);
+  doc.text(`Reviewed by: ${user.name || "User"}   |   Language: ${lang}   |   Date: ${date}`, margin, 31);
+
+  y = 46;
+
+  // ══════════════════════════════════
+  // 2. SCORE CARD
+  // ══════════════════════════════════
+  const scoreVal  = document.getElementById("scoreCircle")?.textContent || "—";
+  const gradeVal  = document.getElementById("scoreGrade")?.textContent  || "Grade: —";
+  const summaryV  = document.getElementById("scoreSummary")?.textContent || "";
+
+  doc.setFillColor(19, 22, 30);
+  doc.roundedRect(margin, y, col, 22, 3, 3, "F");
+  doc.setDrawColor(42, 47, 61);
+  doc.roundedRect(margin, y, col, 22, 3, 3, "S");
+
+  // Score circle
+  const scoreNum = parseInt(scoreVal) || 0;
+  const circleColor = scoreNum >= 80 ? [0,229,160] : scoreNum >= 50 ? [255,209,102] : [255,107,107];
+  doc.setDrawColor(...circleColor);
+  doc.setLineWidth(1.5);
+  doc.circle(margin + 14, y + 11, 8, "S");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(...circleColor);
+  doc.text(scoreVal, margin + 14, y + 13.5, { align: "center" });
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(226, 232, 240);
+  doc.text(gradeVal, margin + 28, y + 9);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(107, 114, 128);
+  const summaryLines = doc.splitTextToSize(summaryV, col - 30);
+  doc.text(summaryLines, margin + 28, y + 15);
+
+  y += 28;
+
+  // ══════════════════════════════════
+  // 3. ISSUES
+  // ══════════════════════════════════
+  const issueItems = document.querySelectorAll("#issuesList li");
+  sectionHeader("🐛  Issues Found  (" + issueItems.length + ")", [62, 21, 21]);
+
+  const badgeColors = {
+    "Bug":              [255, 107, 107],
+    "Security":         [255, 159, 67],
+    "Performance":      [124, 111, 255],
+    "Formatting":       [0, 229, 160],
+    "Exception Handling":[199, 125, 255],
+    "Naming":           [72, 202, 228],
+    "Complexity":       [255, 209, 102],
+    "Unused Code":      [173, 181, 189],
+    "Best Practice":    [116, 192, 252],
+  };
+
+  if (issueItems.length === 0) {
+    bodyText("No issues found. Great code!", 2, 9, [0, 229, 160]);
+  } else {
+    issueItems.forEach(li => {
+      checkPage(10);
+      const badge  = li.querySelector(".issue-badge");
+      const type   = badge ? badge.textContent.trim() : "Issue";
+      const color  = badgeColors[type] || [180, 190, 200];
+      const lineEl = li.querySelector(".issue-line");
+      const line   = lineEl ? lineEl.textContent.trim() : "";
+      const msg    = li.textContent.replace(type, "").replace(line, "").replace("—","").trim();
+
+      // Type badge
+      doc.setFillColor(...color.map(c => Math.round(c * 0.25)));
+      doc.roundedRect(margin + 2, y, 28, 5.5, 1, 1, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(...color);
+      doc.text(type, margin + 4, y + 3.8);
+
+      // Line ref
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(107, 114, 128);
+      doc.text(line, margin + 32, y + 3.8);
+
+      y += 7;
+
+      // Message
+      bodyText(msg, 4, 8.5, [200, 210, 220]);
+      y += 1;
+    });
+  }
+
+  y += 3;
+
+  // ══════════════════════════════════
+  // 4. SUGGESTIONS
+  // ══════════════════════════════════
+  const sugItems = document.querySelectorAll("#suggestionsList li");
+  sectionHeader("💡  Suggestions  (" + sugItems.length + ")", [20, 20, 64]);
+
+  sugItems.forEach((li, i) => {
+    checkPage(9);
+    const text = li.textContent.trim();
+    doc.setFillColor(26, 30, 42);
+    doc.roundedRect(margin + 2, y, col - 4, 6.5, 1, 1, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(124, 111, 255);
+    doc.text(`${i + 1}.`, margin + 5, y + 4.3);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(200, 210, 225);
+    const lines = doc.splitTextToSize(text, col - 18);
+    doc.text(lines, margin + 11, y + 4.3);
+    y += lines.length * 4 + 5;
+  });
+
+  y += 3;
+
+  // ══════════════════════════════════
+  // 5. TIME COMPLEXITY
+  // ══════════════════════════════════
+  const origC = document.getElementById("origComplexity")?.textContent;
+  const impC  = document.getElementById("impComplexity")?.textContent;
+  const expC  = document.getElementById("complexityExplanation")?.textContent;
+
+  if (origC && origC !== "O(?)") {
+    sectionHeader("📈  Time Complexity Analysis", [20, 40, 60]);
+
+    // Two boxes side by side
+    const boxW = (col - 10) / 2;
+    doc.setFillColor(62, 21, 21, 0.5);
+    doc.roundedRect(margin, y, boxW, 18, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(255, 107, 107);
+    doc.text("ORIGINAL", margin + 4, y + 6);
+    doc.setFontSize(14);
+    doc.text(origC, margin + 4, y + 14);
+
+    doc.setFillColor(13, 45, 30);
+    doc.roundedRect(margin + boxW + 10, y, boxW, 18, 2, 2, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(0, 229, 160);
+    doc.text("IMPROVED", margin + boxW + 14, y + 6);
+    doc.setFontSize(14);
+    doc.text(impC || "—", margin + boxW + 14, y + 14);
+
+    y += 22;
+
+    if (expC) bodyText(expC, 2, 8.5, [150, 160, 175]);
+    y += 3;
+  }
+
+  // ══════════════════════════════════
+  // 6. IMPROVED CODE
+  // ══════════════════════════════════
+  const codeEl = document.getElementById("improvedCode");
+  if (codeEl && codeEl.textContent.trim()) {
+    sectionHeader("✨  Improved Code", [13, 45, 30]);
+    doc.setFillColor(10, 12, 18);
+    const codeLines = doc.splitTextToSize(codeEl.textContent.trim(), col - 8);
+    const codeH = Math.min(codeLines.length * 4.2 + 8, 120);
+    checkPage(codeH + 5);
+    doc.roundedRect(margin, y, col, codeH, 2, 2, "F");
+    doc.setFont("courier", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(0, 229, 160);
+    const visibleLines = codeLines.slice(0, Math.floor((codeH - 8) / 4.2));
+    doc.text(visibleLines, margin + 4, y + 6);
+    if (codeLines.length > visibleLines.length) {
+      doc.setTextColor(107, 114, 128);
+      doc.text(`... (${codeLines.length - visibleLines.length} more lines)`, margin + 4, y + codeH - 3);
+    }
+    y += codeH + 5;
+  }
+
+  // ══════════════════════════════════
+  // 7. FOOTER on every page
+  // ══════════════════════════════════
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    doc.setFillColor(13, 15, 20);
+    doc.rect(0, pageH - 12, pageW, 12, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(107, 114, 128);
+    doc.text("Generated by CodeSense AI · RNS Institute of Technology · 2026", margin, pageH - 5);
+    doc.text(`Page ${p} of ${totalPages}`, pageW - margin, pageH - 5, { align: "right" });
+  }
+
+  // ── Save ──
+  const filename = `CodeSense-Report-${lang}-${Date.now()}.pdf`;
+  doc.save(filename);
+}

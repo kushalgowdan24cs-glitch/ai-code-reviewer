@@ -13,6 +13,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 
 <body>
@@ -96,6 +97,14 @@ function example() {
 
         <section class="results-section hidden" id="resultsSection">
           <h2>📊 Review Results</h2>
+
+          <!-- Download Report Button -->
+          <div class="download-bar">
+            <button class="download-btn" onclick="downloadReport()">
+              ⬇ Download PDF Report
+            </button>
+            <span class="download-hint">Includes score, issues, suggestions & improved code</span>
+          </div>
 
           <!-- Score Banner -->
           <div class="score-banner" id="scoreBanner">
