@@ -3,6 +3,7 @@ const BASE_URL = "https://ai-code-reviewer-production-9415.up.railway.app";
 
 const API_URL = `${BASE_URL}/analyze`;
 const HISTORY_API = `${BASE_URL}/history`;
+const AUTH_API = `${BASE_URL}/auth`; 
 
 // ===== On Page Load =====
 window.onload = () => {
