@@ -9,7 +9,7 @@ const historyRoute = require("./routes/history");
 const authRoute = require("./routes/auth");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Connect DB
 connectDB();
