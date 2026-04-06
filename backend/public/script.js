@@ -1,6 +1,8 @@
 // ===== Configuration =====
-const API_URL = "http://localhost:3000/analyze";
-const HISTORY_API = "http://localhost:3000/history";
+const BASE_URL = "https://ai-code-reviewer-production-9415.up.railway.app";
+
+const API_URL = `${BASE_URL}/analyze`;
+const HISTORY_API = `${BASE_URL}/history`;
 
 // ===== On Page Load =====
 window.onload = () => {
@@ -62,7 +64,7 @@ window.onload = () => {
   if (viewId) {
     localStorage.removeItem("viewReviewId");
     const token = localStorage.getItem("token");
-    fetch(`http://localhost:3000/history/${viewId}`, {
+    fetch(`${BASE_URL}/history/${viewId}`, {
       headers: { "Authorization": `Bearer ${token}` }
     })
       .then(r => r.json())
